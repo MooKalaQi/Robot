@@ -9,11 +9,11 @@ var roads = [
     "Ernie's House-Grete's House",
     "Grete's House-Farm",
     "Grete's House-Shop",
-    "Marketplace-Farm",
-    "Marketplace-Post Office",
-    "Marketplace-Shop",
-    "Marketplace-Town Hall",
-    "Shop-Town Hall",
+    'Marketplace-Farm',
+    'Marketplace-Post Office',
+    'Marketplace-Shop',
+    'Marketplace-Town Hall',
+    'Shop-Town Hall',
 ];
 function buildGraph(edges) {
     var graph = Object.create(null);
@@ -27,6 +27,7 @@ function buildGraph(edges) {
         addEdge(from, to);
         addEdge(to, from);
     }
+    console.log(graph);
     return graph;
 }
 var roadGraph = buildGraph(roads);
@@ -130,9 +131,19 @@ function findRoute(graph, from, to) {
     return [];
 }
 var mailRoute = [
-    "Alice's House", "Cabin", "Alice's House", "Bob's House", "Town Hall",
-    "Daria's House", "Ernie's House", "Grete's House", "Shop", "Grete's House",
-    "Farm", "Marketplace", "Post Office"
+    "Alice's House",
+    'Cabin',
+    "Alice's House",
+    "Bob's House",
+    'Town Hall',
+    "Daria's House",
+    "Ernie's House",
+    "Grete's House",
+    'Shop',
+    "Grete's House",
+    'Farm',
+    'Marketplace',
+    'Post Office',
 ];
 function routeRobot(state, memory) {
     if (memory.length === 0) {
@@ -206,3 +217,65 @@ console.log(a.has('a'));
 console.log(ab.has('b'));
 console.log(b.has('a'));
 console.log(a.has('b'));
+// --- Visualization Code ---
+// --- Visualization Code (Animated) ---
+var places = Array.from(new Set(roads.flatMap(function (r) { return r.split('-'); })));
+var mapDiv = document.getElementById('village-map');
+// Remove the next-step button if it exists
+var nextBtn = document.getElementById('next-step');
+if (nextBtn)
+    nextBtn.remove();
+function renderVillage(state) {
+    mapDiv.innerHTML = "";
+    places.forEach(function (place) {
+        var div = document.createElement('div');
+        div.className = 'place';
+        div.id = place.replace(/'/g, '').replace(/\s/g, '');
+        // Place name
+        div.textContent = place;
+        // Parcels
+        state.parcels.filter(function (p) { return p.place === place; })
+            .forEach(function (p, idx) {
+            var parcelDiv = document.createElement('div');
+            parcelDiv.className = 'parcel';
+            parcelDiv.textContent = "\uD83D\uDCE6\u2192".concat(p.address);
+            div.appendChild(parcelDiv);
+        });
+        // Robot
+        if (state.place === place) {
+            var robotDiv = document.createElement('div');
+            robotDiv.className = 'robot';
+            robotDiv.textContent = '🤖';
+            div.appendChild(robotDiv);
+        }
+        mapDiv.appendChild(div);
+    });
+}
+// Pick a robot to visualize:
+var robot = goalOrientedRobot; // You can change to: randomRobot, routeRobot, lazyRobot, etc.
+var currentState = VillageState.random(5);
+var currentMemory = [];
+var finished = false;
+renderVillage(currentState);
+function animateStep() {
+    if (finished)
+        return;
+    if (currentState.parcels.length === 0) {
+        setTimeout(function () { return alert('All parcels delivered!'); }, 300);
+        finished = true;
+        return;
+    }
+    var action = robot(currentState, currentMemory);
+    currentState = currentState.move(action.direction);
+    currentMemory = action.memory || [];
+    renderVillage(currentState);
+    if (currentState.parcels.length === 0) {
+        setTimeout(function () { return alert('All parcels delivered!'); }, 300);
+        finished = true;
+        return;
+    }
+    // Wait before next animation frame for visible effect (e.g., 800ms)
+    setTimeout(function () { return requestAnimationFrame(animateStep); }, 800);
+}
+// Start animation
+requestAnimationFrame(animateStep);

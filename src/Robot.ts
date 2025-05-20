@@ -1,10 +1,9 @@
-// Types
+
 type RoadGraph = { [key: string]: string[] };
 type Parcel = { place: string; address: string };
 type RobotAction = { direction: string; memory?: string[] };
 type Robot = (state: VillageState, memory: string[]) => RobotAction;
 
-// Roads and Graph Construction
 const roads: string[] = [
   "Alice's House-Bob's House",
   "Alice's House-Cabin",
@@ -15,11 +14,11 @@ const roads: string[] = [
   "Ernie's House-Grete's House",
   "Grete's House-Farm",
   "Grete's House-Shop",
-  "Marketplace-Farm",
-  "Marketplace-Post Office",
-  "Marketplace-Shop",
-  "Marketplace-Town Hall",
-  "Shop-Town Hall",
+  'Marketplace-Farm',
+  'Marketplace-Post Office',
+  'Marketplace-Shop',
+  'Marketplace-Town Hall',
+  'Shop-Town Hall',
 ];
 
 function buildGraph(edges: string[]): RoadGraph {
@@ -28,16 +27,17 @@ function buildGraph(edges: string[]): RoadGraph {
     if (!graph[from]) graph[from] = [];
     graph[from].push(to);
   }
-  for (let [from, to] of edges.map(r => r.split('-'))) {
+  for (let [from, to] of edges.map((r) => r.split('-'))) {
     addEdge(from, to);
     addEdge(to, from);
   }
+  console.log(graph);
   return graph;
 }
 
 const roadGraph: RoadGraph = buildGraph(roads);
 
-// VillageState
+
 class VillageState {
   place: string;
   parcels: Parcel[];
@@ -52,11 +52,11 @@ class VillageState {
       return this;
     } else {
       let parcels = this.parcels
-        .map(p => {
+        .map((p) => {
           if (p.place !== this.place) return p;
           return { place: destination, address: p.address };
         })
-        .filter(p => p.place !== p.address);
+        .filter((p) => p.place !== p.address);
       return new VillageState(destination, parcels);
     }
   }
@@ -92,14 +92,18 @@ function runRobot(state: VillageState, robot: Robot, memory: string[]): void {
     }
     let action = robot(state, memory);
     state = state.move(action.direction);
-    // console.log(`Moved to: ${action.direction}`);
+    
   }
 }
 
 runRobot(VillageState.random(), randomRobot, []);
 
 // ----- Exercises #1 -----
-function runRobotCount(state: VillageState, robot: Robot, memory: string[]): number {
+function runRobotCount(
+  state: VillageState,
+  robot: Robot,
+  memory: string[],
+): number {
   let turn = 0;
   for (; ; turn++) {
     if (state.parcels.length === 0) break;
@@ -111,10 +115,13 @@ function runRobotCount(state: VillageState, robot: Robot, memory: string[]): num
 }
 
 function compareRobots(
-  robot1: Robot, memory1: string[],
-  robot2: Robot, memory2: string[]
+  robot1: Robot,
+  memory1: string[],
+  robot2: Robot,
+  memory2: string[],
 ): void {
-  let total1 = 0, total2 = 0;
+  let total1 = 0,
+    total2 = 0;
   for (let i = 0; i < 100; i++) {
     let task = VillageState.random();
     total1 += runRobotCount(task, robot1, memory1);
@@ -125,12 +132,12 @@ function compareRobots(
 }
 
 function findRoute(graph: RoadGraph, from: string, to: string): string[] {
-  let work: { at: string, route: string[] }[] = [{ at: from, route: [] }];
+  let work: { at: string; route: string[] }[] = [{ at: from, route: [] }];
   for (let i = 0; i < work.length; i++) {
     let { at, route } = work[i];
     for (let place of graph[at]) {
       if (place === to) return route.concat(place);
-      if (!work.some(w => w.at === place)) {
+      if (!work.some((w) => w.at === place)) {
         work.push({ at: place, route: route.concat(place) });
       }
     }
@@ -139,9 +146,19 @@ function findRoute(graph: RoadGraph, from: string, to: string): string[] {
 }
 
 const mailRoute: string[] = [
-  "Alice's House", "Cabin", "Alice's House", "Bob's House", "Town Hall",
-  "Daria's House", "Ernie's House", "Grete's House", "Shop", "Grete's House",
-  "Farm", "Marketplace", "Post Office"
+  "Alice's House",
+  'Cabin',
+  "Alice's House",
+  "Bob's House",
+  'Town Hall',
+  "Daria's House",
+  "Ernie's House",
+  "Grete's House",
+  'Shop',
+  "Grete's House",
+  'Farm',
+  'Marketplace',
+  'Post Office',
 ];
 
 function routeRobot(state: VillageState, memory: string[]): RobotAction {
@@ -168,7 +185,7 @@ compareRobots(routeRobot, [], goalOrientedRobot, []);
 // ----- #2 -----
 function lazyRobot(state: VillageState, memory: string[]): RobotAction {
   if (memory.length === 0) {
-    let routes = state.parcels.map(parcel => {
+    let routes = state.parcels.map((parcel) => {
       if (parcel.place !== state.place) {
         return {
           route: findRoute(roadGraph, state.place, parcel.place),
@@ -181,7 +198,7 @@ function lazyRobot(state: VillageState, memory: string[]): RobotAction {
         };
       }
     });
-    function score(option: { route: string[], pickUp: boolean }) {
+    function score(option: { route: string[]; pickUp: boolean }) {
       return (option.pickUp ? 0.5 : 0) - option.route.length;
     }
     memory = routes.reduce((a, b) => (score(a) > score(b) ? a : b)).route;
@@ -204,7 +221,7 @@ class PGroup<T> {
 
   delete(value: T): PGroup<T> {
     if (!this.has(value)) return this;
-    return new PGroup(this.members.filter(m => m !== value));
+    return new PGroup(this.members.filter((m) => m !== value));
   }
 
   has(value: T): boolean {
@@ -222,3 +239,66 @@ console.log(a.has('a'));
 console.log(ab.has('b'));
 console.log(b.has('a'));
 console.log(a.has('b'));
+
+
+
+
+
+const places = Array.from(new Set(roads.flatMap( r => r.split('-'))));
+const mapDiv  = document.getElementById('village-map');
+
+
+function renderVillage(state) {
+  mapDiv.innerHTML = "";
+  places.forEach(place => {
+    const div = document.createElement('div');
+    div.className = 'place';
+    div.id = place.replace(/'/g, '').replace(/\s/g, '');
+    div.textContent = place;
+    state.parcels.filter(p => p.place === place)
+      .forEach((p, idx) => {
+        const parcelDiv = document.createElement('div');
+        parcelDiv.className = 'parcel';
+        parcelDiv.textContent = `📦→${p.address}`;
+        div.appendChild(parcelDiv);
+      });
+
+    if (state.place === place) {
+      const robotDiv = document.createElement('div');
+      robotDiv.className = 'robot';
+      robotDiv.textContent = '🤖';
+      div.appendChild(robotDiv);
+    }
+    mapDiv.appendChild(div);
+  });
+}
+
+const robot = goalOrientedRobot;
+let currentState = VillageState.random(5);
+let currentMemory : string[] = [];
+let finished = false;
+
+renderVillage(currentState);
+
+function animateStep() {
+  if (finished) return;
+
+  if (currentState.parcels.length === 0) {
+    setTimeout(() => alert('All parcels delivered!'), 300);
+    finished = true;
+    return;
+  }
+  let action = robot(currentState, currentMemory);
+  currentState = currentState.move(action.direction);
+  currentMemory = action.memory || [];
+  renderVillage(currentState);
+
+  if (currentState.parcels.length === 0) {
+    setTimeout(() => alert('All parcels delivered!'), 300);
+    finished = true;
+    return;
+  }
+  setTimeout(() => requestAnimationFrame(animateStep), 800);
+}
+
+requestAnimationFrame(animateStep);
